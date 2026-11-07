@@ -271,7 +271,7 @@ export function BrowserStep({
     if (!nav.loading) setUrl(nav.url);
   };
 
-  // A server given the app's callback answers with a termix-mobile:// link;
+  // A server given the app's callback answers with a termoz:// link;
   // finish here instead of letting Android hand it to the router.
   const onRequest = (request: { url: string }) => {
     if (!request.url.startsWith(APP_CALLBACK_URL)) return true;

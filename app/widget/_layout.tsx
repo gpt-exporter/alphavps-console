@@ -1,6 +1,6 @@
 import { Stack } from "expo-router";
 
-// Routes for the `termix-mobile://widget/...` deep links.
+// Routes for the `termoz://widget/...` deep links.
 //
 // These screens render nothing and immediately redirect. They exist only
 // because expo-router resolves a widget link as the path "/widget/connect"

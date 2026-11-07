@@ -136,7 +136,7 @@ data class WidgetSnapshot(
     /** Payload version this build understands. Mirrors SNAPSHOT_VERSION in TS. */
     const val SUPPORTED_VERSION = 1
 
-    const val FALLBACK_URL = "termix-mobile://widget/open"
+    const val FALLBACK_URL = "termoz://widget/open"
     val FALLBACK_URI: Uri = Uri.parse(FALLBACK_URL)
 
     const val DEFAULT_ACCENT = "#f59145"

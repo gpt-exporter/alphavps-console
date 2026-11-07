@@ -3,7 +3,7 @@ name: Native check
 # Compiles the native modules and runs their Kotlin unit tests. Nothing is signed, installed or uploaded.
 on:
   push:
-    branches: [main, "dev-*"]
+    branches: [main, "dev-*", "feature/termoz-android"]
     paths:
       - "modules/**"
       - "plugins/**"
@@ -25,7 +25,7 @@ jobs:
   android:
     name: Android
     if: inputs.platforms != 'ios'
-    runs-on: blacksmith-8vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
@@ -43,18 +43,24 @@ jobs:
       - name: Kotlin unit tests
         working-directory: android
         run: ./gradlew --console=plain :termix-pipe:testDebugUnitTest :termix-terminal:testDebugUnitTest :termix-display:testDebugUnitTest
-      - name: Build debug APK (x86_64)
+      - name: Build debug APK (ARM64)
         working-directory: android
-        run: ./gradlew --console=plain :app:assembleDebug -PreactNativeArchitectures=x86_64
+        run: ./gradlew --console=plain :app:assembleDebug -PreactNativeArchitectures=arm64-v8a
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: android-test-reports
           path: android/**/build/reports/tests
+      - name: Upload Termoz APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: termoz-android-arm64-debug
+          path: android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
 
   ios:
     name: iOS
-    if: inputs.platforms != 'android'
+    if: github.event_name == 'workflow_dispatch' && inputs.platforms != 'android'
     runs-on: blacksmith-6vcpu-macos-latest
     timeout-minutes: 90
     steps:

@@ -180,7 +180,7 @@ class SessionService : Service() {
       val component = context.packageManager
         .getLaunchIntentForPackage(context.packageName)
         ?.component
-      return Intent(Intent.ACTION_VIEW, Uri.parse("termix-mobile://sessions")).apply {
+      return Intent(Intent.ACTION_VIEW, Uri.parse("termoz://sessions")).apply {
         if (component != null) setComponent(component) else setPackage(context.packageName)
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
       }

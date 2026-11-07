@@ -15,7 +15,7 @@ import { toast } from "@/utils/toast";
 import { openTab } from "@/screens/shell/navigate";
 
 /**
- * Handles `termix-mobile://open` links: picks the account for the link's
+ * Handles `termoz://open` links: picks the account for the link's
  * server, switches to it and opens the host. A link that needs a sign in or
  * arrives before the app is up waits and runs after.
  */

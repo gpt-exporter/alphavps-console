@@ -21,7 +21,7 @@ const THEMES: ThemeId[] = [
 ];
 
 /**
- * Reads `termix-mobile://showcase/<scenario>?theme=dark&accent=f59145&video=1`.
+ * Reads `termoz://showcase/<scenario>?theme=dark&accent=f59145&video=1`.
  * Null when the URL is not a showcase link.
  */
 export function parseShowcaseUrl(

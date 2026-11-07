@@ -197,7 +197,7 @@ class SnippetsWidgetProvider : TermixWidgetProvider() {
   override val collectionViewId = R.id.termix_widget_snippet_list
   override val collectionKind = HostCollectionService.KIND_SNIPPETS
   override val wordmark = "SNIPPETS"
-  override val headerUri: Uri = Uri.parse("termix-mobile://widget/snippets")
+  override val headerUri: Uri = Uri.parse("termoz://widget/snippets")
   override val emptySubject = "snippets"
   override val showsSummaryDot = false
 

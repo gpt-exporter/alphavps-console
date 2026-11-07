@@ -2,15 +2,15 @@ import { isServerAccount, type Account } from "@/core/accounts/types";
 import type { SSHHost } from "@/types";
 
 /**
- * `termix-mobile://open` links, so a notification (ntfy, Home Assistant) can
+ * `termoz://open` links, so a notification (ntfy, Home Assistant) can
  * open a host in the app. Two forms:
  *
- *   termix-mobile://open?server=https://termix.example&view=terminal&hostId=12
- *   termix-mobile://open?url=<a Termix web link with ?view=...&hostId=...>
+ *   termoz://open?server=https://termix.example&view=terminal&hostId=12
+ *   termoz://open?url=<a Termix web link with ?view=...&hostId=...>
  *
  * With no server the host is one on This device.
  */
-export const OPEN_LINK_PREFIX = "termix-mobile://open";
+export const OPEN_LINK_PREFIX = "termoz://open";
 
 export interface OpenLink {
   /** The server's address, null for This device. */

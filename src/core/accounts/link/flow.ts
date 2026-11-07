@@ -3,7 +3,7 @@ import { randomUUID } from "expo-crypto";
 
 /**
  * One browser sign in at a time. Its id rides in the callback path
- * (termix-mobile://oidc-callback/<id>), so a link from an old or someone
+ * (termoz://oidc-callback/<id>), so a link from an old or someone
  * else's sign in is dropped, and each one works only once. Kept in storage
  * because Android may close the app while the browser is open.
  */

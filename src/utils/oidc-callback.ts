@@ -1,4 +1,4 @@
-// Hand-off point for the `termix-mobile://oidc-callback` deep link.
+// Hand-off point for the `termoz://oidc-callback` deep link.
 //
 // The link normally never reaches the router: WebBrowser.openAuthSessionAsync
 // captures the redirect and returns it as result.url, and the Linking listener

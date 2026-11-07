@@ -7,7 +7,7 @@ import { AppError } from "@/core/errors";
 import type { SignInOption } from "./methods";
 
 /** The app's own address the server sends the browser back to. */
-export const APP_CALLBACK_URL = "termix-mobile://oidc-callback";
+export const APP_CALLBACK_URL = "termoz://oidc-callback";
 
 /** The callback for one sign in, with its flow id in the path. */
 export function callbackUrlFor(flow: string | null): string {

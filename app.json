@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Termix",
-    "slug": "termix",
-    "version": "2.0.0",
+    "name": "Termoz",
+    "slug": "termoz",
+    "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
-    "scheme": "termix-mobile",
+    "scheme": "termoz",
     "githubUrl": "https://github.com/Termix-SSH/Mobile",
     "backgroundColor": "#141513",
     "userInterfaceStyle": "automatic",
@@ -31,7 +31,7 @@
       }
     },
     "android": {
-      "package": "com.karmaa.termix",
+      "package": "com.termoz.app",
       "versionCode": 20000,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",

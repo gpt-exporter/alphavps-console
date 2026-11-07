@@ -18,7 +18,7 @@
 export const SNAPSHOT_VERSION = 1;
 
 /** URL scheme registered in app.json. */
-export const APP_SCHEME = "termix-mobile";
+export const APP_SCHEME = "termoz";
 
 /** Deep-link host segment reserved for widget-originated links. */
 export const WIDGET_LINK_PREFIX = `${APP_SCHEME}://widget`;
