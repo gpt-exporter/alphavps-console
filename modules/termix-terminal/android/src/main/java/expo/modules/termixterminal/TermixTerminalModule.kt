@@ -57,6 +57,8 @@ class TermixTerminalModule : Module() {
       AsyncFunction("paste") { view: TermixTerminalView, text: String -> view.paste(text) }
       AsyncFunction("scrollToBottom") { view: TermixTerminalView -> view.scrollToBottom() }
       AsyncFunction("copySelection") { view: TermixTerminalView -> view.copySelection() }
+      AsyncFunction("getScreenText") { view: TermixTerminalView -> view.getScreenText() }
+      AsyncFunction("getCapturedOutputText") { view: TermixTerminalView -> view.getCapturedOutputText() }
       AsyncFunction("selectAll") { view: TermixTerminalView -> view.selectAll() }
       AsyncFunction("search") { view: TermixTerminalView, query: String, options: SearchRecord ->
         view.search(query, options.caseSensitive, options.wholeWord, options.regex)

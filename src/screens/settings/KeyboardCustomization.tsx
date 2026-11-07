@@ -15,6 +15,18 @@ const SIZES: { value: KeySize; label: string }[] = [
   { value: "medium", label: "Medium" },
   { value: "large", label: "Large" },
 ];
+const QUICK_HEIGHTS = [48, 56, 64, 72].map((v) => ({
+  value: String(v),
+  label: `${v} dp`,
+}));
+
+const QUICK_WIDTHS = [
+  { value: "0", label: "Fit screen" },
+  { value: "72", label: "72 dp" },
+  { value: "88", label: "88 dp" },
+  { value: "104", label: "104 dp" },
+];
+
 const DELAYS = [150, 250, 400, 600].map((v) => ({
   value: String(v),
   label: `${v} ms`,
@@ -64,6 +76,22 @@ export default function KeyboardCustomization() {
             value={settings.keySize}
             options={SIZES}
             onChange={(keySize) => void updateSettings({ keySize })}
+          />
+          <ChoiceRow
+            label="Quick buttons height"
+            value={String(settings.quickRowHeight)}
+            options={QUICK_HEIGHTS}
+            onChange={(value) =>
+              void updateSettings({ quickRowHeight: Number(value) })
+            }
+          />
+          <ChoiceRow
+            label="Quick buttons width"
+            value={String(settings.quickButtonWidth)}
+            options={QUICK_WIDTHS}
+            onChange={(value) =>
+              void updateSettings({ quickButtonWidth: Number(value) })
+            }
           />
           <SettingRow label="Vibrate on key press">
             <FakeSwitch

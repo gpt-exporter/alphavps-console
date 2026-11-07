@@ -107,6 +107,12 @@ internal class GhosttyTerminalView(context: Context) : View(context) {
     if (drainQueued.compareAndSet(false, true)) vtHandler.post(drainRunnable)
   }
   private val drainRunnable = Runnable { drain() }
+  // Output position is tracked by Ghostty.
+  private fun resetOutputCapture() {
+    synchronized(vtLock) {
+      if (handle != 0L) GhosttyVt.nativeClearOutputStart(handle)
+    }
+  }
 
   // Mode bits read after each parse, used by touch and keys on the main thread.
   @Volatile private var mouseTracking = false
@@ -561,6 +567,7 @@ internal class GhosttyTerminalView(context: Context) : View(context) {
   /** Takes output from this pipe; null uses the view's own, fed by [write]. */
   fun setPipe(id: String?) {
     if (id == pipeId) return
+    resetOutputCapture()
     pipe.detachSink(sink)
     pipeId?.let { TermixPipes.release(it) }
     pipeId = id
@@ -684,6 +691,7 @@ internal class GhosttyTerminalView(context: Context) : View(context) {
   }
 
   fun destroy() {
+    resetOutputCapture()
     destroyed = true
     if (framePending) {
       Choreographer.getInstance().removeFrameCallback(frameCallback)
@@ -712,6 +720,11 @@ internal class GhosttyTerminalView(context: Context) : View(context) {
 
   private fun sendBytes(bytes: ByteArray) {
     if (!finished && bytes.isNotEmpty()) {
+      if (bytes.size == 1 && (bytes[0] == 13.toByte() || bytes[0] == 10.toByte())) {
+          synchronized(vtLock) {
+            if (handle != 0L) GhosttyVt.nativeMarkOutputStart(handle)
+          }
+      }
       if (selectionMode) clearSelection()
       // Typing while scrolled into history jumps back to the live view.
       if (scrollbarOffset + scrollbarLen < scrollbarTotal) scrollToBottom()
@@ -843,6 +856,16 @@ internal class GhosttyTerminalView(context: Context) : View(context) {
       GhosttyVt.nativeScrollToBottom(handle)
     }
     scheduleFrame()
+  }
+
+  fun getScreenText(): String? = synchronized(vtLock) {
+    if (handle == 0L) null
+    else GhosttyVt.nativeScreenText(handle)?.toString(Charsets.UTF_8)
+  }
+
+  fun getCapturedOutputText(): String? = synchronized(vtLock) {
+    if (handle == 0L) null
+    else GhosttyVt.nativeCapturedOutput(handle)?.toString(Charsets.UTF_8)
   }
 
   fun copySelectionToClipboard() = copySelection()

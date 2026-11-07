@@ -23,6 +23,8 @@ export type KeySize = "small" | "medium" | "large";
 
 export interface KeySettings {
   keySize: KeySize;
+  quickRowHeight: number;
+  quickButtonWidth: number;
   hapticFeedback: boolean;
   keyRepeatInterval: number;
   keyRepeatInitialDelay: number;
@@ -30,6 +32,8 @@ export interface KeySettings {
 
 export const DEFAULT_KEY_SETTINGS: KeySettings = {
   keySize: "medium",
+  quickRowHeight: 56,
+  quickButtonWidth: 0,
   hapticFeedback: false,
   keyRepeatInterval: DEFAULT_KEY_REPEAT_INTERVAL,
   keyRepeatInitialDelay: DEFAULT_KEY_REPEAT_INITIAL_DELAY,

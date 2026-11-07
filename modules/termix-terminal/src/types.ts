@@ -123,6 +123,8 @@ export interface TerminalViewHandle {
   paste(text: string): void;
   scrollToBottom(): void;
   copySelection(): void;
+  getCapturedOutputText(): Promise<string | null>;
+  getScreenText(): Promise<string | null>;
   selectAll(): void;
   /** Shows the keyboard. */
   focus(): void;

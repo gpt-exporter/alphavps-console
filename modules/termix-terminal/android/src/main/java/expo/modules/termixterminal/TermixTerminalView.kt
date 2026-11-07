@@ -90,6 +90,8 @@ class TermixTerminalView(context: Context, appContext: AppContext) :
   fun scrollToBottom() = terminal.scrollToBottom()
 
   fun copySelection() = terminal.copySelectionToClipboard()
+  fun getScreenText(): String? = terminal.getScreenText()
+  fun getCapturedOutputText(): String? = terminal.getCapturedOutputText()
 
   fun selectAll() = terminal.selectAll()
 

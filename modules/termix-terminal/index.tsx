@@ -34,6 +34,8 @@ interface NativeHandle {
   paste(text: string): Promise<void>;
   scrollToBottom(): Promise<void>;
   copySelection(): Promise<void>;
+  getCapturedOutputText(): Promise<string | null>;
+  getScreenText(): Promise<string | null>;
   selectAll(): Promise<void>;
   focus(): Promise<void>;
   blur(): Promise<void>;
@@ -146,6 +148,14 @@ export const TerminalView = forwardRef<TerminalViewHandle, TerminalViewProps>(
         paste: (text) => call((n) => n.paste(text)),
         scrollToBottom: () => call((n) => n.scrollToBottom()),
         copySelection: () => call((n) => n.copySelection()),
+        getScreenText: async () =>
+          queue.ready && native.current
+            ? native.current.getScreenText()
+            : null,
+        getCapturedOutputText: async () =>
+          queue.ready && native.current
+            ? native.current.getCapturedOutputText()
+            : null,
         selectAll: () => call((n) => n.selectAll()),
         focus: () => call((n) => n.focus()),
         blur: () => call((n) => n.blur()),

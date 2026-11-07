@@ -58,6 +58,7 @@ import {
   type StartupInput,
   type StartupLine,
 } from "./startup";
+import * as Clipboard from "expo-clipboard";
 import { CommandLineTracker } from "./history/capture";
 import { SuggestionStrip } from "./history/SuggestionStrip";
 import { SearchBar } from "./SearchBar";
@@ -743,6 +744,22 @@ const TerminalComponent = forwardRef<TerminalHandle, TerminalProps>(
           void openTmuxWindows();
           return true;
         }
+        if (id === "copy.lastOutput") {
+          void (async () => {
+            try {
+              const text = await nativeRef.current?.getCapturedOutputText();
+              if (!text?.trim()) {
+                showToast.warning("No command output available");
+                return;
+              }
+              await Clipboard.setStringAsync(text.trimEnd());
+              showToast.success("Output copied to clipboard");
+            } catch {
+              showToast.error("Could not copy command output");
+            }
+          })();
+          return true;
+        }
         if (id === "connection.log") {
           openLog();
           return true;
@@ -834,6 +851,7 @@ const TerminalComponent = forwardRef<TerminalHandle, TerminalProps>(
         keyTarget: () => (XTERM_FALLBACK ? null : keyTarget),
         command: runCommand,
         getCwd: () => connRef.current?.getCwd() ?? Promise.resolve(null),
+        getScreenText: () => XTERM_FALLBACK ? Promise.resolve(null) : (nativeRef.current?.getScreenText() ?? Promise.resolve(null)),
       }),
       [isDialogOpen, sendInput, keyTarget, runCommand],
     );

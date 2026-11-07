@@ -31,6 +31,10 @@ internal object GhosttyVt {
   /** Create a terminal session. Returns 0 on failure. */
   external fun nativeCreate(cols: Int, rows: Int, maxScrollback: Long): Long
 
+  external fun nativeMarkOutputStart(handle: Long)
+  external fun nativeClearOutputStart(handle: Long)
+  external fun nativeCapturedOutput(handle: Long): ByteArray?
+
   external fun nativeFree(handle: Long)
 
   /**

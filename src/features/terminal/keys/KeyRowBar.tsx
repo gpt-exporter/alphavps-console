@@ -50,6 +50,8 @@ export default function KeyRowBar({
   if (!isVisible || layout.rows.length === 0) return null;
   const row = layout.rows[Math.min(rowIndex, layout.rows.length - 1)];
   const multi = layout.rows.length > 1;
+  const isQuickRow = row.id === "quick";
+  const fitQuickRow = isQuickRow && settings.quickButtonWidth === 0;
 
   return (
     <View
@@ -93,15 +95,17 @@ export default function KeyRowBar({
       {/* Only sideways: a fixed height and no vertical bounce. */}
       <ScrollView
         horizontal
+        scrollEnabled={!fitQuickRow}
         style={{ flex: 1 }}
         showsHorizontalScrollIndicator={false}
         alwaysBounceVertical={false}
         directionalLockEnabled
         overScrollMode="never"
         contentContainerStyle={{
-          paddingHorizontal: 6,
-          alignItems: "center",
-          gap: isLandscape ? 3 : 4,
+          flexGrow: fitQuickRow ? 1 : undefined,
+          paddingHorizontal: fitQuickRow ? 0 : 6,
+          alignItems: fitQuickRow ? "stretch" : "center",
+          gap: fitQuickRow ? 2 : isLandscape ? 3 : 4,
         }}
         keyboardShouldPersistTaps="handled"
       >
@@ -121,6 +125,13 @@ export default function KeyRowBar({
               <KeyView
                 key={`${key.id}-${ki}`}
                 def={key}
+                quickWidth={
+                  isQuickRow
+                    ? fitQuickRow
+                      ? "fill"
+                      : settings.quickButtonWidth
+                    : undefined
+                }
                 mods={pad.mods}
                 settings={
                   isShort

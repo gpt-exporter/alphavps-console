@@ -16,11 +16,13 @@ export function KeyView({
   def,
   mods,
   settings,
+  quickWidth,
   onPress,
 }: {
   def: KeyDef;
   mods: Record<ModifierName, StickyModifierState>;
   settings: KeySettings;
+  quickWidth?: number | "fill";
   onPress: (key: KeyDef) => void;
 }) {
   const ui = useUiColors();
@@ -36,7 +38,17 @@ export function KeyView({
   };
 
   return (
-    <View ref={ref} collapsable={false}>
+    <View
+      ref={ref}
+      collapsable={false}
+      style={
+        quickWidth === "fill"
+          ? { flex: 1, minWidth: 0, height: "100%" }
+          : typeof quickWidth === "number"
+            ? { width: quickWidth, height: "100%" }
+            : undefined
+      }
+    >
       <KeyButton
         label={def.label}
         onPress={() => onPress(def)}
@@ -45,6 +57,18 @@ export function KeyView({
         isActive={state !== "inactive"}
         isLocked={state === "locked"}
         keySize={settings.keySize}
+        style={
+          quickWidth !== undefined
+            ? {
+                width: "100%",
+                height: "100%",
+                minWidth: 0,
+                minHeight: 0,
+                paddingHorizontal: 1,
+                paddingVertical: 0,
+              }
+            : undefined
+        }
         hapticFeedback={settings.hapticFeedback}
         keyRepeatEnabled={repeats}
         keyRepeatInterval={settings.keyRepeatInterval}

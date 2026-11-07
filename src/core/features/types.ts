@@ -349,6 +349,7 @@ export interface TerminalInputHandle {
   command?: (id: string) => boolean;
   /** The shell's working directory, or null when it can't tell. */
   getCwd?: () => Promise<string | null>;
+  getScreenText?: () => Promise<string | null>;
 }
 
 // Companions

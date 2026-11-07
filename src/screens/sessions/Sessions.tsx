@@ -36,6 +36,7 @@ import {
 import { reduceMotionOn } from "@/ui/motion";
 import TabBar from "@/screens/sessions/navigation/TabBar";
 import { SessionMenu } from "@/screens/sessions/SessionMenu";
+import { useKeyPrefs } from "@/features/terminal/keys/KeyPrefsContext";
 import { keyBarHeight } from "@/features/terminal/keys/compact";
 import { shellLayout } from "@/screens/shell/layout";
 import {
@@ -98,6 +99,7 @@ const NO_TERMINAL: React.RefObject<TerminalHandle | null> = { current: null };
 export default function Sessions() {
   const ui = useUiColors();
   const insets = useSafeAreaInsets();
+  const { settings: keySettings } = useKeyPrefs();
   const side = useSideInsets();
   // Tabs swap to a note when their plugin is turned off, and back.
   useRegistryVersion();
@@ -173,9 +175,9 @@ export default function Sessions() {
 
   const SESSION_TAB_BAR_HEIGHT = getTabBarHeight(isLandscape, win.isShort) + 2;
 
-  const KEYBOARD_BAR_HEIGHT = keyBarHeight(isLandscape, win.isShort);
-  // Same as the key row, so the tab bar stays put when the panel swaps with the keyboard.
-  const CUSTOM_KEYBOARD_TAB_HEIGHT = KEYBOARD_BAR_HEIGHT;
+  const KEYBOARD_BAR_HEIGHT = keySettings.quickRowHeight;
+  // Preserve the original custom keyboard tab height.
+  const CUSTOM_KEYBOARD_TAB_HEIGHT = keyBarHeight(isLandscape, win.isShort);
 
   // Folded like a laptop: distances from the bottom of this screen to each side of the crease.
   const laptopFold =

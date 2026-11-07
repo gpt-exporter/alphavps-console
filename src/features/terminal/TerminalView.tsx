@@ -42,6 +42,8 @@ export interface TerminalViewApi {
   paste(text: string): void;
   scrollToBottom(): void;
   copySelection(): void;
+  getCapturedOutputText(): Promise<string | null>;
+  getScreenText(): Promise<string | null>;
   selectAll(): void;
   focus(): void;
   blur(): void;
@@ -116,6 +118,8 @@ export const TerminalView = forwardRef<TerminalViewApi, Props>(
         paste: (text) => native.current?.paste(text),
         scrollToBottom: () => native.current?.scrollToBottom(),
         copySelection: () => native.current?.copySelection(),
+        getScreenText: () => native.current?.getScreenText() ?? Promise.resolve(null),
+        getCapturedOutputText: () => native.current?.getCapturedOutputText() ?? Promise.resolve(null),
         selectAll: () => native.current?.selectAll(),
         focus: () => native.current?.focus(),
         blur: () => native.current?.blur(),

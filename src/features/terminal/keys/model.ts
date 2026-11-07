@@ -42,13 +42,13 @@ export interface KeyRow {
 }
 
 export interface KeyLayout {
-  version: 1;
+  version: 2;
   rows: KeyRow[];
   /** The letter of the tmux prefix, Ctrl plus this. */
   tmuxPrefix: string;
 }
 
-export const LAYOUT_VERSION = 1;
+export const LAYOUT_VERSION = 2;
 
 const named = (id: string, label: string, name: string): KeyDef => ({
   id,
@@ -164,6 +164,7 @@ export const KEY_PALETTE: Record<string, KeyDef> = Object.fromEntries(
       { id: "altB", label: "M-b", action: { type: "raw", data: "\x1bb" } },
       { id: "altD", label: "M-d", action: { type: "raw", data: "\x1bd" } },
       command("paste", "Paste", "paste"),
+      command("copyLastOutput", "Copy Output", "copy.lastOutput"),
       command("snippets", "{ }", "panel.snippets"),
       command("history", "Hist", "panel.history"),
       command("search", "Find", "search"),
@@ -218,6 +219,17 @@ export function defaultLayout(): KeyLayout {
     version: LAYOUT_VERSION,
     tmuxPrefix: "b",
     rows: [
+      {
+        id: "quick",
+        label: "Quick",
+        groups: [
+          {
+            id: "workflow",
+            label: "Workflow",
+            keys: keys("paste", "enter", "copyLastOutput", "ctrlU", "ctrlL"),
+          },
+        ],
+      },
       {
         id: "main",
         label: "Main",
@@ -446,6 +458,16 @@ export function readLayout(value: unknown): KeyLayout | null {
     typeof parsed.tmuxPrefix === "string" && /^[a-z]$/.test(parsed.tmuxPrefix)
       ? parsed.tmuxPrefix
       : "b";
+  // Upgrade saved v1 layouts without replacing user-customized rows.
+  if (
+    rows.length > 0 &&
+    (parsed.version === 1 || parsed.version === undefined) &&
+    !rows.some((row) => row.id === "quick")
+  ) {
+    const quickRow = defaultLayout().rows.find((row) => row.id === "quick")!;
+    rows.unshift(quickRow);
+  }
+
   return rows.length
     ? { version: LAYOUT_VERSION, rows, tmuxPrefix: prefix }
     : null;
@@ -502,6 +524,10 @@ export function migrateLegacy(value: unknown): KeyLayout | null {
     rows.push({ id, label, groups: [{ id: `${id}-keys`, label, keys }] });
   }
   if (!rows.length) return null;
+  // Include the quick row when migrating layouts from version 1.x.
+  const quickRow = defaultLayout().rows.find((r) => r.id === "quick")!;
+  if (!rows.some((r) => r.id === "quick")) rows.unshift(quickRow);
+
   // The tmux row is new; add it so people find it.
   const tmuxRow = defaultLayout().rows.find((r) => r.id === "tmux")!;
   if (!rows.some((r) => r.id === "tmux")) rows.push(tmuxRow);

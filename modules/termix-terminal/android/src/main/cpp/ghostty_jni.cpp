@@ -83,6 +83,8 @@ struct Session {
   jint pendingEvents = 0;
   // Last OSC 52 text the program asked to copy, taken by nativeTakeClipboard.
   std::string clipboard;
+  GhosttyTrackedGridRef outputStart = nullptr;
+  GhosttyTerminalScreen outputStartScreen = GHOSTTY_TERMINAL_SCREEN_PRIMARY;
 };
 
 void writePtyCallback(GhosttyTerminal, void* userdata, const uint8_t* data, size_t len) {
@@ -347,7 +349,12 @@ Java_expo_modules_termixterminal_GhosttyVt_nativeCreate(
 
 JNIEXPORT void JNICALL
 Java_expo_modules_termixterminal_GhosttyVt_nativeFree(JNIEnv*, jobject, jlong handle) {
-  destroySession(fromHandle(handle));
+  auto* session = fromHandle(handle);
+  if (session != nullptr && session->outputStart != nullptr) {
+    ghostty_tracked_grid_ref_free(session->outputStart);
+    session->outputStart = nullptr;
+  }
+  destroySession(session);
 }
 
 JNIEXPORT jbyteArray JNICALL
@@ -372,6 +379,124 @@ Java_expo_modules_termixterminal_GhosttyVt_nativeWrite(
   env->SetByteArrayRegion(out, 0, outLen,
                           reinterpret_cast<const jbyte*>(session->ptyOut.data()));
   return out;
+}
+
+JNIEXPORT void JNICALL
+Java_expo_modules_termixterminal_GhosttyVt_nativeClearOutputStart(
+    JNIEnv*, jobject, jlong handle) {
+  auto* session = fromHandle(handle);
+  if (session == nullptr) return;
+  if (session->outputStart != nullptr) {
+    ghostty_tracked_grid_ref_free(session->outputStart);
+    session->outputStart = nullptr;
+  }
+}
+
+JNIEXPORT void JNICALL
+Java_expo_modules_termixterminal_GhosttyVt_nativeMarkOutputStart(
+    JNIEnv*, jobject, jlong handle) {
+  auto* session = fromHandle(handle);
+  if (session == nullptr || session->term == nullptr) return;
+
+  if (session->outputStart != nullptr) {
+    ghostty_tracked_grid_ref_free(session->outputStart);
+    session->outputStart = nullptr;
+  }
+
+  uint16_t x = 0;
+  uint16_t y = 0;
+  GhosttyTerminalScreen screen{};
+
+  if (ghostty_terminal_get(session->term, GHOSTTY_TERMINAL_DATA_CURSOR_X, &x) != GHOSTTY_SUCCESS ||
+      ghostty_terminal_get(session->term, GHOSTTY_TERMINAL_DATA_CURSOR_Y, &y) != GHOSTTY_SUCCESS ||
+      ghostty_terminal_get(session->term, GHOSTTY_TERMINAL_DATA_ACTIVE_SCREEN, &screen) != GHOSTTY_SUCCESS) {
+    return;
+  }
+
+  GhosttyPoint point{};
+  point.tag = GHOSTTY_POINT_TAG_ACTIVE;
+  point.value.coordinate.x = x;
+  point.value.coordinate.y = y;
+
+  GhosttyTrackedGridRef ref = nullptr;
+  if (ghostty_terminal_grid_ref_track(session->term, point, &ref) == GHOSTTY_SUCCESS) {
+    session->outputStart = ref;
+    session->outputStartScreen = screen;
+  }
+}
+
+JNIEXPORT jbyteArray JNICALL
+Java_expo_modules_termixterminal_GhosttyVt_nativeCapturedOutput(
+    JNIEnv* env, jobject, jlong handle) {
+  auto* session = fromHandle(handle);
+  if (session == nullptr || session->outputStart == nullptr) return nullptr;
+
+  GhosttyTerminalScreen screen{};
+  if (ghostty_terminal_get(session->term, GHOSTTY_TERMINAL_DATA_ACTIVE_SCREEN, &screen) != GHOSTTY_SUCCESS ||
+      screen != session->outputStartScreen) {
+    return nullptr;
+  }
+
+  GhosttySelection selection{};
+  selection.size = sizeof(selection);
+  selection.start.size = sizeof(selection.start);
+  selection.end.size = sizeof(selection.end);
+
+  if (ghostty_tracked_grid_ref_snapshot(session->outputStart, &selection.start) != GHOSTTY_SUCCESS) {
+    return nullptr;
+  }
+
+  uint16_t x = 0;
+  uint16_t y = 0;
+  if (ghostty_terminal_get(session->term, GHOSTTY_TERMINAL_DATA_CURSOR_X, &x) != GHOSTTY_SUCCESS ||
+      ghostty_terminal_get(session->term, GHOSTTY_TERMINAL_DATA_CURSOR_Y, &y) != GHOSTTY_SUCCESS) {
+    return nullptr;
+  }
+
+  GhosttyPoint end{};
+  end.tag = GHOSTTY_POINT_TAG_ACTIVE;
+  end.value.coordinate.x = x;
+  end.value.coordinate.y = y;
+
+  if (ghostty_terminal_grid_ref(session->term, end, &selection.end) != GHOSTTY_SUCCESS) {
+    return nullptr;
+  }
+
+  selection.rectangle = false;
+
+  GhosttyFormatterTerminalOptions options{};
+  options.size = sizeof(options);
+  options.emit = GHOSTTY_FORMATTER_FORMAT_PLAIN;
+  options.unwrap = true;
+  options.trim = true;
+  options.extra.size = sizeof(options.extra);
+  options.extra.screen.size = sizeof(options.extra.screen);
+  options.selection = &selection;
+
+  GhosttyFormatter formatter = nullptr;
+  if (ghostty_formatter_terminal_new(nullptr, &formatter, session->term, options) != GHOSTTY_SUCCESS) {
+    return nullptr;
+  }
+
+  size_t needed = 0;
+  const GhosttyResult probe = ghostty_formatter_format_buf(formatter, nullptr, 0, &needed);
+
+  constexpr size_t kMaxCopyBytes = 8 * 1024 * 1024;
+  if ((probe != GHOSTTY_SUCCESS && probe != GHOSTTY_OUT_OF_SPACE) ||
+      needed == 0 || needed > kMaxCopyBytes) {
+    ghostty_formatter_free(formatter);
+    return nullptr;
+  }
+
+  std::vector<uint8_t> buffer(needed);
+  size_t written = 0;
+  const GhosttyResult result = ghostty_formatter_format_buf(
+      formatter, buffer.data(), buffer.size(), &written);
+
+  ghostty_formatter_free(formatter);
+
+  if (result != GHOSTTY_SUCCESS) return nullptr;
+  return toByteArray(env, buffer.data(), written);
 }
 
 JNIEXPORT jint JNICALL
