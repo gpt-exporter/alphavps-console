@@ -39,7 +39,9 @@
         "backgroundColor": "#141513"
       },
       "allowBackup": false,
-      "blockedPermissions": ["android.permission.READ_MEDIA_IMAGES"]
+      "blockedPermissions": [
+        "android.permission.READ_MEDIA_IMAGES"
+      ]
     },
     "web": {
       "output": "static",
@@ -171,7 +173,12 @@
         }
       ],
       "expo-dev-client",
-      ["expo-secure-store", { "configureAndroidBackup": false }],
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": false
+        }
+      ],
       "expo-web-browser",
       [
         "expo-sqlite",
@@ -197,12 +204,17 @@
           },
           "android": {
             "enabled": true,
-            "singleShareMimeTypes": ["*/*"],
-            "multipleShareMimeTypes": ["*/*"]
+            "singleShareMimeTypes": [
+              "*/*"
+            ],
+            "multipleShareMimeTypes": [
+              "*/*"
+            ]
           }
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      "./plugins/withTermozSigning.js"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -233,7 +245,9 @@
         }
       }
     },
-    "assetBundlePatterns": ["assets/**/*"],
+    "assetBundlePatterns": [
+      "assets/**/*"
+    ],
     "owner": "termix"
   }
 }
