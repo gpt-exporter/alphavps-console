@@ -58,6 +58,7 @@ import {
   type StartupInput,
   type StartupLine,
 } from "./startup";
+import { BASH_OSC133_SETUP } from "./osc133";
 import * as Clipboard from "expo-clipboard";
 import { CommandLineTracker } from "./history/capture";
 import { SuggestionStrip } from "./history/SuggestionStrip";
@@ -443,6 +444,18 @@ const TerminalComponent = forwardRef<TerminalHandle, TerminalProps>(
           return;
         }
       }
+      if (
+        transportRef.current === "local" &&
+        !terminalConfig.autoTmux &&
+        !terminalConfig.autoMosh
+      ) {
+        typeLines([
+          { text: BASH_OSC133_SETUP, waitAfterMs: 300 },
+          ...startupLines(base),
+        ]);
+        return;
+      }
+
       typeLines(startupLines(base));
     }, [
       config,

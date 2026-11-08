@@ -429,7 +429,81 @@ JNIEXPORT jbyteArray JNICALL
 Java_expo_modules_termixterminal_GhosttyVt_nativeCapturedOutput(
     JNIEnv* env, jobject, jlong handle) {
   auto* session = fromHandle(handle);
-  if (session == nullptr || session->outputStart == nullptr) return nullptr;
+  if (session == nullptr) return nullptr;
+
+  // Prefer Ghostty's native OSC 133-aware command output selection.
+  uint16_t cols = 0;
+  size_t totalRows = 0;
+
+  if (ghostty_terminal_get(session->term, GHOSTTY_TERMINAL_DATA_COLS, &cols) == GHOSTTY_SUCCESS &&
+      ghostty_terminal_get(session->term, GHOSTTY_TERMINAL_DATA_TOTAL_ROWS, &totalRows) == GHOSTTY_SUCCESS) {
+
+    const size_t scanRows = totalRows < 1000 ? totalRows : 1000;
+
+    for (size_t offset = 0; offset < scanRows; ++offset) {
+      const size_t y = totalRows - offset - 1;
+
+      for (int x = static_cast<int>(cols) - 1; x >= 0; --x) {
+        GhosttyPoint point{};
+        point.tag = GHOSTTY_POINT_TAG_SCREEN;
+        point.value.coordinate.x = static_cast<uint16_t>(x);
+        point.value.coordinate.y = static_cast<uint32_t>(y);
+
+        GhosttyGridRef ref{};
+        ref.size = sizeof(ref);
+
+        if (ghostty_terminal_grid_ref(session->term, point, &ref) != GHOSTTY_SUCCESS)
+          continue;
+
+        GhosttySelection selection{};
+        selection.size = sizeof(selection);
+        selection.start.size = sizeof(selection.start);
+        selection.end.size = sizeof(selection.end);
+
+        if (ghostty_terminal_select_output(session->term, ref, &selection) != GHOSTTY_SUCCESS)
+          continue;
+
+        GhosttyTerminalSelectionFormatOptions options{};
+        options.size = sizeof(options);
+        options.emit = GHOSTTY_FORMATTER_FORMAT_PLAIN;
+        options.unwrap = true;
+        options.trim = true;
+        options.selection = &selection;
+
+        size_t needed = 0;
+        const auto probe = ghostty_terminal_selection_format_buf(
+            session->term, options, nullptr, 0, &needed);
+
+        if (probe != GHOSTTY_OUT_OF_SPACE || needed == 0)
+          continue;
+
+        if (needed > 8 * 1024 * 1024)
+          return nullptr;
+
+        std::vector<uint8_t> output(needed);
+        size_t written = 0;
+
+        if (ghostty_terminal_selection_format_buf(
+                session->term, options, output.data(), output.size(), &written)
+            != GHOSTTY_SUCCESS)
+          return nullptr;
+
+        bool nonempty = false;
+        for (size_t i = 0; i < written; ++i) {
+          if (output[i] > 32) {
+            nonempty = true;
+            break;
+          }
+        }
+
+        if (nonempty)
+          return toByteArray(env, output.data(), written);
+      }
+    }
+  }
+
+  // Fallback for SSH shells without OSC 133 integration.
+  if (session->outputStart == nullptr) return nullptr;
 
   GhosttyTerminalScreen screen{};
   if (ghostty_terminal_get(session->term, GHOSTTY_TERMINAL_DATA_ACTIVE_SCREEN, &screen) != GHOSTTY_SUCCESS ||
